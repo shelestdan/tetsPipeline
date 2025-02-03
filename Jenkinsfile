@@ -16,8 +16,7 @@ pipeline {
             steps {
                 script {
                     docker.image('python:3.11').inside("-e HOME=/tmp") {
-                        // Обновляем PATH для поиска установленных скриптов
-                        withEnv(["PATH=/tmp/.local/bin:$PATH"]) {
+                        withEnv(["PATH=/tmp/.local/bin:${env.PATH}"]) {
                             sh 'pip install -r requirements.txt'
                             sh 'pytest tests/'
                         }
