@@ -22,7 +22,7 @@ pipeline {
                     docker.image('python:3.11').inside("-e HOME=/tmp") {
                         sh '''
                             python -m venv venv
-                            source venv/bin/activate
+                            . venv/bin/activate  # <-- Заменено source на .
                             pip install --no-cache-dir -r requirements.txt
                             pytest tests/
                         '''
