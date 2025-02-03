@@ -1,10 +1,14 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Git branch to build')
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/shelestdan/tetsPipeline.git'
+                git branch: params.BRANCH, url: 'https://github.com/shelestdan/tetsPipeline.git'
             }
         }
 
@@ -12,6 +16,7 @@ pipeline {
             steps {
                 script {
                     docker.image('python:3.11').inside {
+                        sh 'pip install -r requirements.txt'
                         sh 'pytest tests/'
                     }
                 }
@@ -45,6 +50,9 @@ pipeline {
     }
 
     post {
+        always {
+            sh 'docker system prune -af'  // Очистка Docker
+        }
         success {
             slackSend channel: '#devops', message: "Сборка #${env.BUILD_NUMBER} успешна! 🎉"
         }
