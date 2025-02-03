@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/ваш-юзер/my-flask-app.git'
+                git branch: 'main', url: 'https://github.com/shelestdan/tetsPipeline.git'
             }
         }
 
@@ -20,7 +20,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("ваш-юзер/my-flask-app:${env.BUILD_NUMBER}")
+                    dockerImage = docker.build("shelestdan/my-flask-app:${env.BUILD_NUMBER}")
                 }
             }
         }
