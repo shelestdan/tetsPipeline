@@ -15,7 +15,8 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    docker.image('python:3.11').inside {
+                    // Передаем флаг -e HOME=/tmp для установки переменной окружения HOME внутри контейнера
+                    docker.image('python:3.11').inside("-e HOME=/tmp") {
                         sh 'pip install -r requirements.txt'
                         sh 'pytest tests/'
                     }
