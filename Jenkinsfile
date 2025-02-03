@@ -9,11 +9,12 @@ pipeline {
         }
 
         stage('Test') {
-            agent {
-                docker { image 'python:3.11' }
-            }
             steps {
-                sh 'pytest tests/'
+                script {
+                    docker.image('python:3.11').inside {
+                        sh 'pytest tests/'
+                    }
+                }
             }
         }
 
