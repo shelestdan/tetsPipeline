@@ -53,11 +53,5 @@ pipeline {
         always {
             sh 'docker system prune -af'  // Очистка Docker
         }
-        success {
-            slackSend channel: '#devops', message: "Сборка #${env.BUILD_NUMBER} успешна! 🎉"
-        }
-        failure {
-            slackSend channel: '#devops', message: "Сборка #${env.BUILD_NUMBER} провалена! 🔥"
-        }
     }
 }
