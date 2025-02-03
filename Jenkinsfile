@@ -5,6 +5,10 @@ pipeline {
         string(name: 'BRANCH', defaultValue: 'main', description: 'Git branch to build')
     }
 
+    environment {
+        DOCKER_IMAGE = "shelestdan/my-flask-app:${env.BUILD_NUMBER}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -16,10 +20,12 @@ pipeline {
             steps {
                 script {
                     docker.image('python:3.11').inside("-e HOME=/tmp") {
-                        withEnv(["PATH=/tmp/.local/bin:${env.PATH}"]) {
-                            sh 'pip install -r requirements.txt'
-                            sh 'pytest tests/'
-                        }
+                        sh '''
+                            python -m venv venv
+                            source venv/bin/activate
+                            pip install --no-cache-dir -r requirements.txt
+                            pytest tests/
+                        '''
                     }
                 }
             }
@@ -28,7 +34,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("shelestdan/my-flask-app:${env.BUILD_NUMBER}")
+                    dockerImage = docker.build(DOCKER_IMAGE)
                 }
             }
         }
@@ -45,15 +51,28 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh 'docker-compose down'
-                sh 'docker-compose up -d'
+                script {
+                    try {
+                        sh 'docker-compose down || true'  // Игнорируем ошибку, если контейнер не запущен
+                        sh 'docker-compose up -d'
+                        sh 'docker ps | grep my-flask-app' // Проверяем, что контейнер запущен
+                    } catch (Exception e) {
+                        error "Ошибка при деплое: ${e.message}"
+                    }
+                }
             }
         }
     }
 
     post {
         always {
-            sh 'docker system prune -af'  // Очистка Docker
+            script {
+                try {
+                    sh 'docker system prune -af'
+                } catch (Exception e) {
+                    echo "Ошибка при очистке Docker: ${e.message}"
+                }
+            }
         }
     }
 }
